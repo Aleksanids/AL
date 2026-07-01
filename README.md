@@ -46,8 +46,10 @@
 4. Перед принятием результата запусти:
 
 ```powershell
+$env:PYTHONPATH = "src"
 python scripts/validate_agent_pack.py
 python -m unittest discover -s tests
+python -m al_python_coding_agent.cli run-task examples/python_bugfix_task.yaml
 ```
 
 ## Принципы агента
@@ -69,11 +71,11 @@ python -m unittest discover -s tests
 
 ## Проверки для этого репозитория
 
-Этот репозиторий намеренно легкий: валидатор и тесты используют только
-стандартную библиотеку Python. Минимальная проверка:
+Этот репозиторий держит runtime без внешних зависимостей, а dev-инструменты
+подключены через optional dependency group `dev`. Минимальная проверка:
 
 ```powershell
-python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py
+python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/task_io.py src/al_python_coding_agent/adapters.py src/al_python_coding_agent/runner.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py tests/test_runner.py
 python scripts/validate_agent_pack.py
 python -m unittest discover -s tests
 ```
@@ -85,4 +87,37 @@ $env:PYTHONPATH = "src"
 python -m al_python_coding_agent.cli classify --title "Fix traceback on empty input"
 python -m al_python_coding_agent.cli check-command "git status --short"
 python -m al_python_coding_agent.cli check-path "src/package/module.py" --allow "src/" --forbid ".env"
+python -m al_python_coding_agent.cli run-task examples/python_bugfix_task.yaml
+```
+
+## V0.3 Runner
+
+Dry-run task planning:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m al_python_coding_agent.cli run-task examples/python_bugfix_task.yaml
+```
+
+Adapter dry-run:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m al_python_coding_agent.cli run-task examples/python_bugfix_task.yaml --adapter codex
+python -m al_python_coding_agent.cli run-task examples/python_bugfix_task.yaml --adapter cursor
+python -m al_python_coding_agent.cli run-task examples/python_bugfix_task.yaml --adapter aider
+```
+
+`--execute` запускает внешний CLI adapter только если он установлен в `PATH`.
+По умолчанию runner ничего не меняет в проекте.
+
+Dev tooling:
+
+```powershell
+python -m pip install -e ".[dev]"
+python -m pytest
+python -m ruff format --check .
+python -m ruff check .
+python -m mypy src scripts
+python -m bandit -r src scripts -q
 ```

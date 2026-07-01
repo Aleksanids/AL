@@ -62,6 +62,18 @@
 - Ruff: fast linting and formatting for Python projects.
   Source: https://docs.astral.sh/ruff/
 
+## CLI Adapter Sources
+
+- Codex CLI: non-interactive usage supports `codex exec` for scripted prompts,
+  so AL maps the Codex adapter to a dry-run command first.
+  Source: https://developers.openai.com/codex/noninteractive
+- Cursor CLI: Cursor exposes terminal/headless agent workflows; AL keeps Cursor
+  behind dry-run by default and only executes through explicit `--execute`.
+  Source: https://cursor.com/docs/cli/overview
+- Aider scripting: Aider supports one-shot command execution with
+  `--message`, so AL maps the Aider adapter to a generated command preview.
+  Source: https://aider.chat/docs/scripting.html
+
 ## Design Decisions For AL
 
 - Keep the agent pack file-based and portable.

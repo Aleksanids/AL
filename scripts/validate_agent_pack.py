@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence
-
 
 REQUIRED_ROOT_FILES = (
     "README.md",
@@ -25,8 +23,12 @@ REQUIRED_ROOT_FILES = (
     "src/al_python_coding_agent/__init__.py",
     "src/al_python_coding_agent/task_model.py",
     "src/al_python_coding_agent/policy.py",
+    "src/al_python_coding_agent/task_io.py",
+    "src/al_python_coding_agent/adapters.py",
+    "src/al_python_coding_agent/runner.py",
     "src/al_python_coding_agent/cli.py",
     "tests/test_core_policy.py",
+    "tests/test_runner.py",
     "pyproject.toml",
 )
 
@@ -49,6 +51,19 @@ FORBIDDEN_SECRET_MARKERS = (
     "pass" + "word=",
 )
 
+EXCLUDED_SCAN_PARTS = {
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "env",
+    "venv",
+}
+
 
 @dataclass(frozen=True)
 class CheckResult:
@@ -65,7 +80,12 @@ def read_utf8(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def check_file_exists(root: Path, relative_path: str, *, min_bytes: int = MIN_TEXT_BYTES) -> CheckResult:
+def check_file_exists(
+    root: Path,
+    relative_path: str,
+    *,
+    min_bytes: int = MIN_TEXT_BYTES,
+) -> CheckResult:
     path = root / relative_path
     if not path.is_file():
         return CheckResult(relative_path, False, "missing")
@@ -94,7 +114,11 @@ def load_manifest(root: Path) -> tuple[dict[str, object] | None, CheckResult]:
     except FileNotFoundError:
         return None, CheckResult(str(manifest_path.relative_to(root)), False, "missing")
     except json.JSONDecodeError as exc:
-        return None, CheckResult(str(manifest_path.relative_to(root)), False, f"invalid json: {exc}")
+        return None, CheckResult(
+            str(manifest_path.relative_to(root)),
+            False,
+            f"invalid json: {exc}",
+        )
     return manifest, CheckResult(str(manifest_path.relative_to(root)), True, "json ok")
 
 
@@ -148,7 +172,7 @@ def check_secret_markers(root: Path) -> list[CheckResult]:
         path
         for path in root.rglob("*")
         if path.is_file()
-        and ".git" not in path.parts
+        and not is_excluded_from_scan(path, root)
         and path.suffix.lower() in {".md", ".json", ".toml", ".py", ".yaml", ".yml", ""}
     ]
     for path in text_files:
@@ -164,6 +188,11 @@ def check_secret_markers(root: Path) -> list[CheckResult]:
     if not results:
         results.append(CheckResult("secret-scan", True, "no forbidden markers"))
     return results
+
+
+def is_excluded_from_scan(path: Path, root: Path) -> bool:
+    relative_parts = set(path.relative_to(root).parts)
+    return bool(relative_parts & EXCLUDED_SCAN_PARTS)
 
 
 def run_checks(root: Path) -> list[CheckResult]:

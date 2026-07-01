@@ -1,9 +1,9 @@
 {
   "id": "al-python-coding-agent",
   "name": "AL Python Coding Agent",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "language": "ru",
-  "mission": "Помогать пользователю программировать на Python через проверяемый engineering loop: task intake, classification, context, file scope, plan, minimal patch, quality gates, critic, verifier, report and handoff.",
+  "mission": "Помогать пользователю программировать на Python через проверяемый engineering loop: task intake, classification, context, file scope, dry-run plan, optional LLM adapter, minimal patch, quality gates, critic, verifier, report and handoff.",
   "success_criteria": [
     "repo root подтвержден до изменений",
     "scope явно ограничен задачей пользователя",
@@ -12,6 +12,8 @@
     "использованы существующие patterns целевого проекта",
     "изменения минимальны и обратимы",
     "Python-код имеет понятные typed boundaries",
+    "run-task dry-run строит план и quality gates без изменения проекта",
+    "external adapters запускаются только по явному --execute",
     "рисковые места покрыты релевантными проверками",
     "critic и verifier не подменяются самопринятием implementer",
     "финальный отчет содержит фактические команды и результаты"
@@ -36,6 +38,8 @@
     "allowed_forbidden_paths",
     "role_skill_route",
     "plan",
+    "dry_run_task_runner",
+    "optional_adapter_invocation",
     "minimal_patch",
     "quality_gates",
     "critic_review",
@@ -260,10 +264,38 @@
       "path": "archive/source_materials/SOURCE_PROOF.md"
     }
   ],
+  "adapters": [
+    {
+      "id": "manual",
+      "mode": "prompt_only",
+      "execution": "never executes an external CLI"
+    },
+    {
+      "id": "codex",
+      "command": "codex exec <prompt>",
+      "execution": "dry-run by default; external CLI only with --execute"
+    },
+    {
+      "id": "cursor",
+      "command": "cursor-agent -p <prompt>",
+      "execution": "dry-run by default; external CLI only with --execute"
+    },
+    {
+      "id": "aider",
+      "command": "aider --yes --message <prompt>",
+      "execution": "dry-run by default; external CLI only with --execute"
+    }
+  ],
   "verification_commands": [
     "python scripts/validate_agent_pack.py",
-    "python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py",
+    "python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/task_io.py src/al_python_coding_agent/adapters.py src/al_python_coding_agent/runner.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py tests/test_runner.py",
+    "python -m al_python_coding_agent.cli run-task examples/python_bugfix_task.yaml",
     "python -m unittest discover -s tests",
+    "python -m pytest",
+    "python -m ruff format --check .",
+    "python -m ruff check .",
+    "python -m mypy src scripts",
+    "python -m bandit -r src scripts -q",
     "git diff --check"
   ],
   "source_influences": [

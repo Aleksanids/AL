@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from pathlib import PurePosixPath, PureWindowsPath
 from typing import Literal
 
-
 CommandStatus = Literal["allow", "approval_required", "deny"]
 
 

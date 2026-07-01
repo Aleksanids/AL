@@ -4,11 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "al-python-coding-agent"
-version = "0.2.0"
+version = "0.3.0"
 description = "Portable Python coding agent instruction pack with deterministic policy helpers."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "bandit>=1.7.10",
+  "mypy>=1.10",
+  "pytest>=8.0",
+  "ruff>=0.6",
+]
 
 [project.scripts]
 al-agent = "al_python_coding_agent.cli:main"
@@ -23,13 +31,20 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM", "C4", "PTH", "RUF"]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["E402"]
+
 [tool.mypy]
 python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_ignores = true
 no_implicit_optional = true
+files = ["src", "scripts"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+[tool.bandit]
+exclude_dirs = ["tests", "archive"]

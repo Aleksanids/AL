@@ -20,11 +20,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install dev dependencies
+        run: python -m pip install -e ".[dev]"
       - name: Validate agent pack
         run: python scripts/validate_agent_pack.py
       - name: Syntax check
-        run: python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py
+        run: python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/task_io.py src/al_python_coding_agent/adapters.py src/al_python_coding_agent/runner.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py tests/test_runner.py
+      - name: Ruff format check
+        run: python -m ruff format --check .
+      - name: Ruff lint
+        run: python -m ruff check .
+      - name: Type check
+        run: python -m mypy src scripts
       - name: Unit tests
-        run: python -m unittest discover -s tests
+        run: python -m pytest
+      - name: Security scan
+        run: python -m bandit -r src scripts -q
       - name: Diff hygiene
         run: git diff --check
