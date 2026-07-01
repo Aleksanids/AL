@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from al_python_coding_agent.adapters import adapter_names
+from al_python_coding_agent.autoconnect import auto_connect_task, format_auto_connect
 from al_python_coding_agent.policy import PathScope, assess_command
 from al_python_coding_agent.routing import (
     RouteSelection,
@@ -47,6 +48,23 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run_task.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
 
+    auto_connect = subparsers.add_parser(
+        "auto-connect",
+        help="Auto-connect AL agents/skills from task text without a task card.",
+    )
+    auto_connect.add_argument("--title", required=True)
+    auto_connect.add_argument("--body", default="")
+    auto_connect.add_argument("--root", type=Path, default=Path.cwd())
+    auto_connect.add_argument("--adapter", choices=adapter_names(), default="manual")
+    auto_connect.add_argument("--allow", action="append", default=[])
+    auto_connect.add_argument("--forbid", action="append")
+    auto_connect.add_argument(
+        "--execute",
+        action="store_true",
+        help="Run the selected adapter command.",
+    )
+    auto_connect.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
+
     list_agents = subparsers.add_parser("list-agents", help="List connected agent roles.")
     list_agents.add_argument("--root", type=Path, default=Path.cwd())
 
@@ -77,9 +95,25 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"{'allow' if path_decision.allowed else 'deny'}: {path_decision.reason}")
         return 0 if path_decision.allowed else 2
     if args.command == "run-task":
-        result = run_task_file(args.task_file, adapter=args.adapter, execute=args.execute)
-        print(format_result(result, as_json=args.json))
-        return 0 if result.adapter_result.status not in {"failed", "missing_executable"} else 2
+        task_result = run_task_file(args.task_file, adapter=args.adapter, execute=args.execute)
+        print(format_result(task_result, as_json=args.json))
+        return 0 if task_result.adapter_result.status not in {"failed", "missing_executable"} else 2
+    if args.command == "auto-connect":
+        connect_result = auto_connect_task(
+            args.title,
+            args.body,
+            root=args.root,
+            adapter=args.adapter,
+            execute=args.execute,
+            allowed_paths=tuple(args.allow),
+            forbidden_paths=tuple(args.forbid) if args.forbid is not None else None,
+        )
+        print(format_auto_connect(connect_result, as_json=args.json))
+        return (
+            0
+            if connect_result.task_run.adapter_result.status not in {"failed", "missing_executable"}
+            else 2
+        )
     if args.command == "list-agents":
         print_manifest_entries(args.root, "roles")
         return 0

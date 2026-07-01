@@ -21,6 +21,7 @@ PY_COMPILE_COMMAND = " ".join(
         "src/al_python_coding_agent/__init__.py",
         "src/al_python_coding_agent/task_model.py",
         "src/al_python_coding_agent/policy.py",
+        "src/al_python_coding_agent/autoconnect.py",
         "src/al_python_coding_agent/routing.py",
         "src/al_python_coding_agent/task_io.py",
         "src/al_python_coding_agent/adapters.py",
@@ -28,6 +29,7 @@ PY_COMPILE_COMMAND = " ".join(
         "src/al_python_coding_agent/cli.py",
         "scripts/validate_agent_pack.py",
         "tests/test_agent_pack.py",
+        "tests/test_autoconnect.py",
         "tests/test_core_policy.py",
         "tests/test_routing.py",
         "tests/test_runner.py",
@@ -91,7 +93,17 @@ def run_task_file(
     execute: bool = False,
 ) -> TaskRunResult:
     task = load_task(task_path)
-    manifest_root = find_agent_root(task_path)
+    return run_task(task, task_root=task_path, adapter=adapter, execute=execute)
+
+
+def run_task(
+    task: TaskSpec,
+    *,
+    task_root: Path,
+    adapter: AdapterName = "manual",
+    execute: bool = False,
+) -> TaskRunResult:
+    manifest_root = find_agent_root(task_root)
     manifest = load_agent_manifest(manifest_root)
     route_selection = route_task(
         task.task_type,
