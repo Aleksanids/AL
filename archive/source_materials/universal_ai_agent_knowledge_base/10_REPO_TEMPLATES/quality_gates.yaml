@@ -1,0 +1,25 @@
+gates:
+  ruff_format_check:
+    command: "ruff format --check ."
+    required: true
+  ruff_lint:
+    command: "ruff check ."
+    required: true
+  type_check:
+    command: "mypy src"
+    required: true
+  unit_tests:
+    command: "pytest tests/unit"
+    required: true
+  all_tests:
+    command: "pytest"
+    required: false
+  bandit:
+    command: "bandit -r src -q"
+    required: true
+  forbidden_paths_check:
+    internal: true
+    required: true
+  secrets_scan:
+    internal: true
+    required: true

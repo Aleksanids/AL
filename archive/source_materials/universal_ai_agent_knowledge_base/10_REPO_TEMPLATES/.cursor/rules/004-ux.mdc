@@ -1,0 +1,7 @@
+---
+description: UX review rules for UI changes
+alwaysApply: false
+globs: ["**/*.tsx", "**/*.jsx", "**/*.vue", "**/*.html", "**/*.css", "**/*.scss"]
+---
+
+Check loading, empty, error, disabled and success states. Verify accessibility, keyboard navigation, readable labels, visual hierarchy and error recovery.

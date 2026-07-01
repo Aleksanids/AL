@@ -1,0 +1,6 @@
+---
+description: Always-on project rules for AI coding work
+alwaysApply: true
+---
+
+Always produce a plan before code changes. Respect allowed and forbidden paths. Never claim completion without checks or explicit limitations. Keep changes small and reversible.

@@ -1,0 +1,7 @@
+---
+description: Python engineering standards
+alwaysApply: false
+globs: ["**/*.py", "pyproject.toml"]
+---
+
+Use src layout, type hints for public functions, ruff, mypy, pytest. Add regression tests for bug fixes. Do not silence type/lint errors without explanation.

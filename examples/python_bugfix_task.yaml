@@ -1,0 +1,36 @@
+id: EXAMPLE-PY-BUGFIX-001
+type: bugfix
+title: "Fix incorrect handling of empty input"
+priority: normal
+
+context:
+  summary: "Function crashes when input list is empty."
+  expected_behavior: "Return an empty result without exception."
+  observed_behavior: "IndexError is raised."
+
+allowed_paths:
+  - src/
+  - tests/
+
+forbidden_paths:
+  - .env
+  - secrets/
+  - dist/
+  - build/
+
+must_read:
+  - AGENTS.md
+  - README.md
+
+acceptance_criteria:
+  - "Empty input no longer crashes."
+  - "Regression test added."
+  - "Existing behavior for non-empty input unchanged."
+  - "Quality gates pass or skipped gates are explained."
+
+quality_gates:
+  - python_syntax
+  - unit_tests
+  - diff_check
+  - forbidden_paths_check
+  - secrets_scan

@@ -1,0 +1,23 @@
+{
+  "name": "universal-ai-coding-agent-knowledge-base",
+  "version": "1.0.0",
+  "built_at": "2026-07-01",
+  "purpose": "Knowledge base and templates for creating a universal AI coding agent repository.",
+  "not_app_specific": true,
+  "sections": [
+    "01_AGENT_FOUNDATION",
+    "02_PROGRAMMING_QUALITY",
+    "03_PYTHON_ENGINEERING",
+    "04_TESTING_AND_QA",
+    "05_SECURITY_AND_SUPPLY_CHAIN",
+    "06_UX_UI_DESIGN",
+    "07_GITHUB_AND_CI",
+    "08_AGENT_PROMPTS_AND_SKILLS",
+    "09_EVALUATION",
+    "10_REPO_TEMPLATES",
+    "11_SOURCES",
+    "12_CHECKLISTS",
+    "13_CODEX_TASK_PACK"
+  ],
+  "source_count": 33
+}

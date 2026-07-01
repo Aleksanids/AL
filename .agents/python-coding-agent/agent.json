@@ -1,0 +1,301 @@
+{
+  "id": "al-python-coding-agent",
+  "name": "AL Python Coding Agent",
+  "version": "0.2.0",
+  "language": "ru",
+  "mission": "Помогать пользователю программировать на Python через проверяемый engineering loop: task intake, classification, context, file scope, plan, minimal patch, quality gates, critic, verifier, report and handoff.",
+  "success_criteria": [
+    "repo root подтвержден до изменений",
+    "scope явно ограничен задачей пользователя",
+    "тип задачи классифицирован",
+    "allowed_paths и forbidden_paths определены для рискованных задач",
+    "использованы существующие patterns целевого проекта",
+    "изменения минимальны и обратимы",
+    "Python-код имеет понятные typed boundaries",
+    "рисковые места покрыты релевантными проверками",
+    "critic и verifier не подменяются самопринятием implementer",
+    "финальный отчет содержит фактические команды и результаты"
+  ],
+  "task_types": [
+    "bugfix",
+    "hotfix",
+    "feature",
+    "refactor",
+    "tests",
+    "docs",
+    "security",
+    "ux",
+    "ci",
+    "release"
+  ],
+  "operating_loop": [
+    "intake",
+    "classification",
+    "root_and_scope",
+    "repository_map",
+    "allowed_forbidden_paths",
+    "role_skill_route",
+    "plan",
+    "minimal_patch",
+    "quality_gates",
+    "critic_review",
+    "verifier_acceptance",
+    "handoff"
+  ],
+  "roles": [
+    {
+      "id": "chief_orchestrator",
+      "path": "roles/chief_orchestrator.md"
+    },
+    {
+      "id": "repository_cartographer",
+      "path": "roles/repository_cartographer.md"
+    },
+    {
+      "id": "planner",
+      "path": "roles/planner.md"
+    },
+    {
+      "id": "architect",
+      "path": "roles/architect.md"
+    },
+    {
+      "id": "implementer",
+      "path": "roles/implementer.md"
+    },
+    {
+      "id": "python_engineer",
+      "path": "roles/python_engineer.md"
+    },
+    {
+      "id": "test_engineer",
+      "path": "roles/test_engineer.md"
+    },
+    {
+      "id": "code_reviewer",
+      "path": "roles/code_reviewer.md"
+    },
+    {
+      "id": "verifier",
+      "path": "roles/verifier.md"
+    },
+    {
+      "id": "security_guard",
+      "path": "roles/security_guard.md"
+    },
+    {
+      "id": "ux_reviewer",
+      "path": "roles/ux_reviewer.md"
+    },
+    {
+      "id": "github_ci_reviewer",
+      "path": "roles/github_ci_reviewer.md"
+    },
+    {
+      "id": "documentation_reviewer",
+      "path": "roles/documentation_reviewer.md"
+    },
+    {
+      "id": "handoff_reporter",
+      "path": "roles/handoff_reporter.md"
+    }
+  ],
+  "skills": [
+    {
+      "id": "repository-intake",
+      "path": "skills/repository-intake/SKILL.md"
+    },
+    {
+      "id": "python-engineering",
+      "path": "skills/python-engineering/SKILL.md"
+    },
+    {
+      "id": "debug-test-loop",
+      "path": "skills/debug-test-loop/SKILL.md"
+    },
+    {
+      "id": "code-review",
+      "path": "skills/code-review/SKILL.md"
+    },
+    {
+      "id": "minimal-refactor",
+      "path": "skills/minimal-refactor/SKILL.md"
+    },
+    {
+      "id": "documentation-handoff",
+      "path": "skills/documentation-handoff/SKILL.md"
+    },
+    {
+      "id": "hotfix",
+      "path": "skills/hotfix/SKILL.md"
+    },
+    {
+      "id": "feature-development",
+      "path": "skills/feature-development/SKILL.md"
+    },
+    {
+      "id": "bug-investigation",
+      "path": "skills/bug-investigation/SKILL.md"
+    },
+    {
+      "id": "python-quality",
+      "path": "skills/python-quality/SKILL.md"
+    },
+    {
+      "id": "test-design",
+      "path": "skills/test-design/SKILL.md"
+    },
+    {
+      "id": "security-review",
+      "path": "skills/security-review/SKILL.md"
+    },
+    {
+      "id": "ux-review",
+      "path": "skills/ux-review/SKILL.md"
+    },
+    {
+      "id": "github-ci",
+      "path": "skills/github-ci/SKILL.md"
+    },
+    {
+      "id": "refactor-safety",
+      "path": "skills/refactor-safety/SKILL.md"
+    },
+    {
+      "id": "release-readiness",
+      "path": "skills/release-readiness/SKILL.md"
+    },
+    {
+      "id": "technical-debt-control",
+      "path": "skills/technical-debt-control/SKILL.md"
+    },
+    {
+      "id": "handoff-update",
+      "path": "skills/handoff-update/SKILL.md"
+    }
+  ],
+  "workflows": [
+    {
+      "id": "closed-loop-python-task",
+      "path": "workflows/closed_loop_python_task.md"
+    }
+  ],
+  "checklists": [
+    {
+      "id": "python-quality-gate",
+      "path": "checklists/python_quality_gate.md"
+    },
+    {
+      "id": "security-and-context-gate",
+      "path": "checklists/security_and_context_gate.md"
+    }
+  ],
+  "templates": [
+    {
+      "id": "task-card",
+      "path": "templates/task_card.md"
+    }
+  ],
+  "policies": [
+    {
+      "id": "file-scope-policy",
+      "path": "policies/file_scope_policy.md"
+    },
+    {
+      "id": "command-policy",
+      "path": "policies/command_policy.md"
+    },
+    {
+      "id": "security-policy",
+      "path": "policies/security_policy.md"
+    },
+    {
+      "id": "ux-policy",
+      "path": "policies/ux_policy.md"
+    }
+  ],
+  "quality_gates": [
+    {
+      "id": "quality-gates",
+      "path": "quality_gates/quality_gates.yaml"
+    }
+  ],
+  "evals": [
+    {
+      "id": "evaluation-plan",
+      "path": "evals/evaluation_plan.md"
+    }
+  ],
+  "examples": [
+    {
+      "id": "python-bugfix-task",
+      "path": "examples/python_bugfix_task.yaml"
+    }
+  ],
+  "prompts": [
+    {
+      "id": "planner-prompt",
+      "path": "prompts/planner_prompt.md"
+    },
+    {
+      "id": "implementer-prompt",
+      "path": "prompts/implementer_prompt.md"
+    },
+    {
+      "id": "critic-prompt",
+      "path": "prompts/critic_prompt.md"
+    },
+    {
+      "id": "verifier-prompt",
+      "path": "prompts/verifier_prompt.md"
+    }
+  ],
+  "source_materials": [
+    {
+      "id": "universal-ai-agent-knowledge-base",
+      "path": "archive/source_materials/universal_ai_agent_knowledge_base/README.md"
+    },
+    {
+      "id": "source-proof",
+      "path": "archive/source_materials/SOURCE_PROOF.md"
+    }
+  ],
+  "verification_commands": [
+    "python scripts/validate_agent_pack.py",
+    "python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py",
+    "python -m unittest discover -s tests",
+    "git diff --check"
+  ],
+  "source_influences": [
+    {
+      "name": "User archive: Universal AI Coding Agent Knowledge Base",
+      "pattern": "task lifecycle, file scope, critic/verifier, security, QA, UX, CI and evaluation layers",
+      "url": "archive/source_materials/universal_ai_agent_knowledge_base/README.md"
+    },
+    {
+      "name": "Aider",
+      "pattern": "terminal pair programming, codebase map, git-aware edits",
+      "url": "https://github.com/aider-ai/aider"
+    },
+    {
+      "name": "SWE-agent",
+      "pattern": "issue-to-fix loop with tools and verification",
+      "url": "https://github.com/swe-agent/swe-agent"
+    },
+    {
+      "name": "mini-swe-agent",
+      "pattern": "small agent core and minimal configuration",
+      "url": "https://github.com/SWE-agent/mini-swe-agent"
+    },
+    {
+      "name": "OpenHands",
+      "pattern": "local-first agent backends and controlled automation",
+      "url": "https://github.com/OpenHands/openhands"
+    },
+    {
+      "name": "smolagents",
+      "pattern": "minimal code-agent abstractions and tool-agnostic design",
+      "url": "https://github.com/huggingface/smolagents"
+    }
+  ]
+}

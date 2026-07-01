@@ -1,1 +1,88 @@
-# AL
+# AL Python Coding Agent
+
+`AL` - репозиторий с переносимым набором инструкций, ролей, навыков и
+проверок для ИИ-агента, который помогает программировать на Python в локальных
+репозиториях.
+
+Главная идея: агент не "вайбит" код вслепую, а работает по короткому
+проверяемому циклу:
+
+```text
+контекст -> маршрут ролей/skills -> план -> минимальное изменение -> проверка -> отчет
+```
+
+## Что внутри
+
+- `AGENTS.md` - корневые инструкции для Codex и совместимых coding agents.
+- `CLAUDE.md`, `.cursorrules`, `.github/copilot-instructions.md` - адаптеры
+  для популярных агентных сред.
+- `.agents/python-coding-agent/agent.json` - машинно-читаемый manifest агента.
+- `.agents/python-coding-agent/system_prompt.md` - основной системный prompt.
+- `.agents/python-coding-agent/roles/` - роли: orchestrator, Python engineer,
+  reviewer, test engineer, security guard.
+- `.agents/python-coding-agent/skills/` - переиспользуемые skills для Python
+  engineering, repository intake, debug/test loop, review, refactor и handoff.
+- `.agents/python-coding-agent/workflows/` - closed-loop workflow для задач.
+- `.agents/python-coding-agent/checklists/` - quality и safety gates.
+- `.agents/python-coding-agent/templates/` - шаблон task card.
+- `policies/` - file scope, command, security и UX policies.
+- `quality_gates/` - machine-readable gate matrix.
+- `evals/` - план оценки качества самого агента.
+- `examples/` - пример task card для Python bugfix.
+- `archive/source_materials/` - копия и распакованные материалы
+  `universal-ai-coding-agent-knowledge-base.zip`, использованные как источник.
+- `docs/research-notes.md` - источники и выводы по GitHub, Habr и Python docs.
+- `scripts/validate_agent_pack.py` - локальный валидатор структуры без внешних
+  зависимостей.
+- `tests/test_agent_pack.py` - smoke-тест валидатора на стандартной библиотеке.
+
+## Быстрый старт
+
+1. Открой репозиторий в coding agent.
+2. Скажи агенту: "Следуй `AGENTS.md`; используй
+   `.agents/python-coding-agent/agent.json` как manifest".
+3. Для конкретной задачи заполни шаблон:
+   `.agents/python-coding-agent/templates/task_card.md`.
+4. Перед принятием результата запусти:
+
+```powershell
+python scripts/validate_agent_pack.py
+python -m unittest discover -s tests
+```
+
+## Принципы агента
+
+- Сначала читать локальный контекст, потом менять код.
+- Классифицировать задачу: bugfix, hotfix, feature, refactor, tests, docs,
+  security, UX, CI или release.
+- Для рискованных задач задавать `allowed_paths` и `forbidden_paths`.
+- Не создавать новую архитектуру, если хватает существующего кода,
+  стандартной библиотеки или уже установленных зависимостей.
+- Держать core logic отдельно от CLI, файловой системы, сети и UI.
+- Использовать типы как инженерный контракт, а не как декорацию.
+- Проверять рисковые места тестами, линтером и type checker, если они
+  настроены в целевом проекте.
+- Не принимать собственный patch без critic/verifier слоя.
+- Не читать секреты, `.env`, cookies, tokens, passwords и browser profiles.
+- Не делать commit, push, PR, install, live API, browser automation или
+  destructive operations без отдельной прямой команды пользователя.
+
+## Проверки для этого репозитория
+
+Этот репозиторий намеренно легкий: валидатор и тесты используют только
+стандартную библиотеку Python. Минимальная проверка:
+
+```powershell
+python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py
+python scripts/validate_agent_pack.py
+python -m unittest discover -s tests
+```
+
+Минимальный deterministic CLI core можно проверить так:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m al_python_coding_agent.cli classify --title "Fix traceback on empty input"
+python -m al_python_coding_agent.cli check-command "git status --short"
+python -m al_python_coding_agent.cli check-path "src/package/module.py" --allow "src/" --forbid ".env"
+```

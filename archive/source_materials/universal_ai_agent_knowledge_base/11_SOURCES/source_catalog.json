@@ -1,0 +1,200 @@
+[
+  {
+    "group": "AI agents / orchestration",
+    "title": "OpenAI Agents guide",
+    "url": "https://developers.openai.com/api/docs/guides/agents",
+    "use": "Понятие агента как приложения: планирование, инструменты, специалисты, состояние."
+  },
+  {
+    "group": "AI agents / orchestration",
+    "title": "OpenAI Agents SDK - Agents",
+    "url": "https://openai.github.io/openai-agents-python/agents/",
+    "use": "Инструкции, tools, handoffs, guardrails, structured outputs."
+  },
+  {
+    "group": "Codex",
+    "title": "Codex Agent Skills",
+    "url": "https://developers.openai.com/codex/skills",
+    "use": "Формат навыков для повторяемых workflow."
+  },
+  {
+    "group": "Codex",
+    "title": "Codex Subagents",
+    "url": "https://developers.openai.com/codex/subagents",
+    "use": "Специализированные агенты для параллельного анализа и проверки."
+  },
+  {
+    "group": "Agent instructions",
+    "title": "AGENTS.md",
+    "url": "https://agents.md/",
+    "use": "Единый файл инструкций для coding agents."
+  },
+  {
+    "group": "Cursor",
+    "title": "Cursor Rules",
+    "url": "https://cursor.com/docs/rules.md",
+    "use": "Проектные правила, применяемые всегда или по области файлов."
+  },
+  {
+    "group": "Cursor",
+    "title": "Cursor Skills",
+    "url": "https://cursor.com/docs/skills",
+    "use": "Переиспользуемые навыки агента с SKILL.md."
+  },
+  {
+    "group": "Cursor",
+    "title": "Cursor Subagents",
+    "url": "https://cursor.com/docs/subagents",
+    "use": "Специализированные подагенты для scoped workflows."
+  },
+  {
+    "group": "GitHub Copilot agents",
+    "title": "GitHub Copilot custom agents",
+    "url": "https://docs.github.com/en/copilot/concepts/agents/coding-agent/about-custom-agents",
+    "use": "Кастомные агенты как специализированные профили под workflow и стандарты."
+  },
+  {
+    "group": "GitHub Copilot agents",
+    "title": "Creating custom agents for Copilot cloud agent",
+    "url": "https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/create-custom-agents",
+    "use": ".github/agents/*.agent.md и формат профиля агента."
+  },
+  {
+    "group": "Python packaging",
+    "title": "Python Packaging User Guide - pyproject.toml",
+    "url": "https://packaging.python.org/en/latest/guides/writing-pyproject-toml/",
+    "use": "Стандартный конфиг проекта, инструментов, сборки и метаданных."
+  },
+  {
+    "group": "Python style",
+    "title": "PEP 8",
+    "url": "https://peps.python.org/pep-0008/",
+    "use": "Базовые соглашения по стилю Python."
+  },
+  {
+    "group": "Python testing",
+    "title": "pytest Good Integration Practices",
+    "url": "https://docs.pytest.org/en/stable/explanation/goodpractices.html",
+    "use": "src layout, организация тестов и запуск."
+  },
+  {
+    "group": "Python tooling",
+    "title": "Ruff docs",
+    "url": "https://docs.astral.sh/ruff/",
+    "use": "Линтер/форматтер для быстрых локальных и CI-проверок."
+  },
+  {
+    "group": "Python tooling",
+    "title": "mypy docs",
+    "url": "https://mypy.readthedocs.io/",
+    "use": "Статическая типизация и ловля ошибок до runtime."
+  },
+  {
+    "group": "Python tooling",
+    "title": "uv docs",
+    "url": "https://docs.astral.sh/uv/",
+    "use": "Управление Python, зависимостями и lockfile."
+  },
+  {
+    "group": "Security",
+    "title": "OWASP Top 10",
+    "url": "https://owasp.org/www-project-top-ten/",
+    "use": "Критичные риски web/app security."
+  },
+  {
+    "group": "Security",
+    "title": "OWASP Secure Coding Practices Quick Reference Guide",
+    "url": "https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/stable-en/",
+    "use": "Технологически нейтральный checklist безопасного кодирования."
+  },
+  {
+    "group": "Security",
+    "title": "NIST SSDF SP 800-218",
+    "url": "https://csrc.nist.gov/pubs/sp/800/218/final",
+    "use": "Secure Software Development Framework."
+  },
+  {
+    "group": "Supply chain",
+    "title": "SLSA",
+    "url": "https://slsa.dev/",
+    "use": "Защита supply chain, provenance и integrity."
+  },
+  {
+    "group": "Supply chain",
+    "title": "OpenSSF Scorecard",
+    "url": "https://github.com/ossf/scorecard",
+    "use": "Метрики security health для open-source репозиториев."
+  },
+  {
+    "group": "GitHub security",
+    "title": "GitHub Actions secure use",
+    "url": "https://docs.github.com/en/actions/reference/security/secure-use",
+    "use": "Безопасное написание workflows и работа с untrusted input."
+  },
+  {
+    "group": "GitHub security",
+    "title": "Dependabot alerts",
+    "url": "https://docs.github.com/code-security/dependabot/dependabot-alerts/about-dependabot-alerts",
+    "use": "Уязвимые зависимости и security updates."
+  },
+  {
+    "group": "UX/accessibility",
+    "title": "WCAG 2.2",
+    "url": "https://www.w3.org/TR/WCAG22/",
+    "use": "Доступность интерфейсов и уровни соответствия."
+  },
+  {
+    "group": "UX/usability",
+    "title": "Nielsen Norman Group - 10 Usability Heuristics",
+    "url": "https://www.nngroup.com/articles/ten-usability-heuristics/",
+    "use": "10 эвристик юзабилити для проверки интерфейсов."
+  },
+  {
+    "group": "UX/design systems",
+    "title": "Material Design accessibility/usability",
+    "url": "https://m3.material.io/foundations/usability",
+    "use": "Практики UI, accessibility, компонентность."
+  },
+  {
+    "group": "UX/design systems",
+    "title": "Apple Human Interface Guidelines",
+    "url": "https://developer.apple.com/design/human-interface-guidelines",
+    "use": "Рекомендации по clarity, consistency, feedback и platform conventions."
+  },
+  {
+    "group": "Engineering practices",
+    "title": "Google Engineering Practices - Code Review",
+    "url": "https://google.github.io/eng-practices/review/",
+    "use": "Цель ревью: улучшение code health, проверка дизайна, тестов, сложности."
+  },
+  {
+    "group": "Testing",
+    "title": "Martin Fowler - Practical Test Pyramid",
+    "url": "https://martinfowler.com/articles/practical-test-pyramid.html",
+    "use": "Баланс unit/integration/e2e тестов."
+  },
+  {
+    "group": "Delivery",
+    "title": "Trunk Based Development",
+    "url": "https://trunkbaseddevelopment.com/",
+    "use": "Короткие ветки, частая интеграция, deployable main."
+  },
+  {
+    "group": "Habr / RU practice",
+    "title": "Скучный Python: повышаем качество кода",
+    "url": "https://habr.com/ru/companies/otus/articles/713992/",
+    "use": "Практика надежного Python: меньше магии, больше проверяемости."
+  },
+  {
+    "group": "Habr / RU practice",
+    "title": "Наш архитектурный подход к Python приложениям",
+    "url": "https://habr.com/ru/companies/raiffeisenbank/articles/885792/",
+    "use": "Практика Python-архитектуры, code style, ruff, pytest, слои."
+  },
+  {
+    "group": "Habr / RU practice",
+    "title": "Структурное ревью Python-кода для CI, IDE и AI-агентов",
+    "url": "https://habr.com/ru/articles/1031124/",
+    "use": "Идея отдельного слоя structural review поверх линтеров/типов/тестов."
+  }
+]
