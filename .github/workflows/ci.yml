@@ -25,7 +25,7 @@ jobs:
       - name: Validate agent pack
         run: python scripts/validate_agent_pack.py
       - name: Syntax check
-        run: python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/task_io.py src/al_python_coding_agent/adapters.py src/al_python_coding_agent/runner.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py tests/test_runner.py
+        run: python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/routing.py src/al_python_coding_agent/task_io.py src/al_python_coding_agent/adapters.py src/al_python_coding_agent/runner.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py tests/test_routing.py tests/test_runner.py
       - name: Ruff format check
         run: python -m ruff format --check .
       - name: Ruff lint

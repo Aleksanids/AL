@@ -34,7 +34,9 @@
 - `docs/research-notes.md` - источники и выводы по GitHub, Habr и Python docs.
 - `scripts/validate_agent_pack.py` - локальный валидатор структуры без внешних
   зависимостей.
-- `tests/test_agent_pack.py` - smoke-тест валидатора на стандартной библиотеке.
+- `src/al_python_coding_agent/routing.py` - manifest-backed routing для
+  выбора agents/skills по task type.
+- `tests/` - smoke, policy, runner и routing tests.
 
 ## Быстрый старт
 
@@ -75,7 +77,7 @@ python -m al_python_coding_agent.cli run-task examples/python_bugfix_task.yaml
 подключены через optional dependency group `dev`. Минимальная проверка:
 
 ```powershell
-python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/task_io.py src/al_python_coding_agent/adapters.py src/al_python_coding_agent/runner.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py tests/test_runner.py
+python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/routing.py src/al_python_coding_agent/task_io.py src/al_python_coding_agent/adapters.py src/al_python_coding_agent/runner.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py tests/test_routing.py tests/test_runner.py
 python scripts/validate_agent_pack.py
 python -m unittest discover -s tests
 ```
@@ -88,6 +90,9 @@ python -m al_python_coding_agent.cli classify --title "Fix traceback on empty in
 python -m al_python_coding_agent.cli check-command "git status --short"
 python -m al_python_coding_agent.cli check-path "src/package/module.py" --allow "src/" --forbid ".env"
 python -m al_python_coding_agent.cli run-task examples/python_bugfix_task.yaml
+python -m al_python_coding_agent.cli list-agents
+python -m al_python_coding_agent.cli list-skills
+python -m al_python_coding_agent.cli inspect-route --type bugfix --json
 ```
 
 ## V0.3 Runner
@@ -110,6 +115,42 @@ python -m al_python_coding_agent.cli run-task examples/python_bugfix_task.yaml -
 
 `--execute` запускает внешний CLI adapter только если он установлен в `PATH`.
 По умолчанию runner ничего не меняет в проекте.
+
+## V0.4 Agent/Skill Routing
+
+`run-task` теперь читает `.agents/python-coding-agent/agent.json`, выбирает
+route по `type` задачи и показывает подключенных agents/skills в dry-run:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m al_python_coding_agent.cli run-task examples/python_bugfix_task.yaml
+python -m al_python_coding_agent.cli run-task examples/python_bugfix_task.yaml --json
+```
+
+Для task cards можно явно добавить дополнительные роли и skills:
+
+```yaml
+agents:
+  - security_guard
+skills:
+  - security-review
+```
+
+Manifest route matrix валидируется локальным validator: битые ссылки на
+roles/skills считаются ошибкой pack-а.
+
+Модель исполнения честная и переносимая: AL выбирает roles/skills, выводит их
+instruction paths и добавляет их в adapter prompt. Отдельный запуск локальных
+subagents зависит от host-среды (например, Codex/Cursor), а не включается
+автоматически самим pack-ом.
+
+Discovery:
+
+```powershell
+python -m al_python_coding_agent.cli list-agents
+python -m al_python_coding_agent.cli list-skills
+python -m al_python_coding_agent.cli inspect-route --type bugfix
+```
 
 Dev tooling:
 

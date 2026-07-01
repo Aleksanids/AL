@@ -42,6 +42,8 @@ class TaskSpec:
     allowed_paths: tuple[str, ...] = field(default_factory=tuple)
     forbidden_paths: tuple[str, ...] = field(default_factory=tuple)
     must_read: tuple[str, ...] = field(default_factory=tuple)
+    requested_agents: tuple[str, ...] = field(default_factory=tuple)
+    requested_skills: tuple[str, ...] = field(default_factory=tuple)
     acceptance_criteria: tuple[str, ...] = field(default_factory=tuple)
     quality_gates: tuple[str, ...] = field(default_factory=tuple)
 
@@ -81,6 +83,8 @@ class TaskSpec:
             allowed_paths=string_tuple(data.get("allowed_paths")),
             forbidden_paths=string_tuple(data.get("forbidden_paths")),
             must_read=string_tuple(data.get("must_read")),
+            requested_agents=first_string_tuple(data, "agents", "requested_agents"),
+            requested_skills=first_string_tuple(data, "skills", "requested_skills"),
             acceptance_criteria=string_tuple(data.get("acceptance_criteria")),
             quality_gates=string_tuple(data.get("quality_gates")),
         )
@@ -110,6 +114,14 @@ def string_tuple(value: object) -> tuple[str, ...]:
     if not isinstance(value, list):
         return ()
     return tuple(item for item in value if isinstance(item, str))
+
+
+def first_string_tuple(data: dict[str, object], *keys: str) -> tuple[str, ...]:
+    for key in keys:
+        values = string_tuple(data.get(key))
+        if values:
+            return values
+    return ()
 
 
 def string_dict(value: object) -> dict[str, str]:

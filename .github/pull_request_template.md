@@ -18,7 +18,7 @@ Forbidden paths:
 ## Checks
 
 - [ ] `python scripts/validate_agent_pack.py`
-- [ ] `python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/task_io.py src/al_python_coding_agent/adapters.py src/al_python_coding_agent/runner.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py tests/test_runner.py`
+- [ ] `python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/routing.py src/al_python_coding_agent/task_io.py src/al_python_coding_agent/adapters.py src/al_python_coding_agent/runner.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py tests/test_routing.py tests/test_runner.py`
 - [ ] `python -m unittest discover -s tests`
 - [ ] `python -m ruff format --check .`
 - [ ] `python -m ruff check .`

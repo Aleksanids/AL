@@ -1,9 +1,9 @@
 {
   "id": "al-python-coding-agent",
   "name": "AL Python Coding Agent",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "language": "ru",
-  "mission": "Помогать пользователю программировать на Python через проверяемый engineering loop: task intake, classification, context, file scope, dry-run plan, optional LLM adapter, minimal patch, quality gates, critic, verifier, report and handoff.",
+  "mission": "Помогать пользователю программировать на Python через проверяемый multi-agent engineering loop: task intake, classification, context, file scope, agent/skill route, dry-run plan, optional LLM adapter, minimal patch, quality gates, critic, verifier, report and handoff.",
   "success_criteria": [
     "repo root подтвержден до изменений",
     "scope явно ограничен задачей пользователя",
@@ -13,6 +13,8 @@
     "изменения минимальны и обратимы",
     "Python-код имеет понятные typed boundaries",
     "run-task dry-run строит план и quality gates без изменения проекта",
+    "run-task dry-run показывает выбранных agents и skills",
+    "agent_routes валидируются на битые role/skill ссылки",
     "external adapters запускаются только по явному --execute",
     "рисковые места покрыты релевантными проверками",
     "critic и verifier не подменяются самопринятием implementer",
@@ -37,6 +39,8 @@
     "repository_map",
     "allowed_forbidden_paths",
     "role_skill_route",
+    "agent_route_selection",
+    "skill_activation",
     "plan",
     "dry_run_task_runner",
     "optional_adapter_invocation",
@@ -46,6 +50,304 @@
     "verifier_acceptance",
     "handoff"
   ],
+  "agent_routes": {
+    "default": {
+      "agents": [
+        "chief_orchestrator",
+        "repository_cartographer",
+        "planner",
+        "implementer",
+        "code_reviewer",
+        "verifier",
+        "handoff_reporter"
+      ],
+      "skills": [
+        "repository-intake",
+        "python-engineering",
+        "debug-test-loop",
+        "code-review",
+        "documentation-handoff"
+      ],
+      "quality_gates": [
+        "agent_pack_validation",
+        "python_syntax",
+        "unit_tests",
+        "diff_check"
+      ],
+      "rationale": [
+        "Default route covers intake, implementation, review, verification and handoff."
+      ]
+    },
+    "bugfix": {
+      "agents": [
+        "chief_orchestrator",
+        "repository_cartographer",
+        "python_engineer",
+        "test_engineer",
+        "code_reviewer",
+        "verifier",
+        "handoff_reporter"
+      ],
+      "skills": [
+        "repository-intake",
+        "bug-investigation",
+        "python-engineering",
+        "debug-test-loop",
+        "code-review",
+        "documentation-handoff"
+      ],
+      "quality_gates": [
+        "python_syntax",
+        "unit_tests",
+        "diff_check",
+        "forbidden_paths_check",
+        "secrets_scan"
+      ],
+      "rationale": [
+        "Bugfix route prioritizes reproduction, regression coverage and verifier acceptance."
+      ]
+    },
+    "hotfix": {
+      "agents": [
+        "chief_orchestrator",
+        "python_engineer",
+        "test_engineer",
+        "security_guard",
+        "code_reviewer",
+        "verifier",
+        "handoff_reporter"
+      ],
+      "skills": [
+        "hotfix",
+        "bug-investigation",
+        "python-engineering",
+        "debug-test-loop",
+        "security-review",
+        "release-readiness",
+        "documentation-handoff"
+      ],
+      "quality_gates": [
+        "agent_pack_validation",
+        "python_syntax",
+        "unit_tests",
+        "ruff_lint",
+        "type_check",
+        "security_scan",
+        "diff_check"
+      ],
+      "rationale": [
+        "Hotfix route adds security and release readiness before handoff."
+      ]
+    },
+    "feature": {
+      "agents": [
+        "chief_orchestrator",
+        "architect",
+        "planner",
+        "python_engineer",
+        "test_engineer",
+        "code_reviewer",
+        "documentation_reviewer",
+        "verifier"
+      ],
+      "skills": [
+        "feature-development",
+        "repository-intake",
+        "python-engineering",
+        "test-design",
+        "code-review",
+        "documentation-handoff"
+      ],
+      "quality_gates": [
+        "agent_pack_validation",
+        "python_syntax",
+        "unit_tests",
+        "ruff_lint",
+        "type_check",
+        "diff_check"
+      ],
+      "rationale": [
+        "Feature route separates planning, architecture, implementation, tests and docs."
+      ]
+    },
+    "refactor": {
+      "agents": [
+        "architect",
+        "python_engineer",
+        "test_engineer",
+        "code_reviewer",
+        "verifier"
+      ],
+      "skills": [
+        "minimal-refactor",
+        "refactor-safety",
+        "technical-debt-control",
+        "python-engineering",
+        "debug-test-loop",
+        "code-review"
+      ],
+      "quality_gates": [
+        "agent_pack_validation",
+        "python_syntax",
+        "unit_tests",
+        "ruff_lint",
+        "type_check",
+        "diff_check"
+      ],
+      "rationale": [
+        "Refactor route requires behavior preservation and reviewer/verifier checks."
+      ]
+    },
+    "tests": {
+      "agents": [
+        "test_engineer",
+        "python_engineer",
+        "code_reviewer",
+        "verifier"
+      ],
+      "skills": [
+        "test-design",
+        "debug-test-loop",
+        "python-quality",
+        "code-review"
+      ],
+      "quality_gates": [
+        "python_syntax",
+        "unit_tests",
+        "ruff_lint",
+        "type_check",
+        "diff_check"
+      ],
+      "rationale": [
+        "Tests route focuses on coverage quality and false-green prevention."
+      ]
+    },
+    "docs": {
+      "agents": [
+        "documentation_reviewer",
+        "repository_cartographer",
+        "code_reviewer",
+        "handoff_reporter"
+      ],
+      "skills": [
+        "documentation-handoff",
+        "repository-intake",
+        "code-review",
+        "handoff-update"
+      ],
+      "quality_gates": [
+        "agent_pack_validation",
+        "diff_check"
+      ],
+      "rationale": [
+        "Docs route keeps documentation grounded in current repository facts."
+      ]
+    },
+    "security": {
+      "agents": [
+        "security_guard",
+        "python_engineer",
+        "test_engineer",
+        "code_reviewer",
+        "verifier"
+      ],
+      "skills": [
+        "security-review",
+        "python-engineering",
+        "test-design",
+        "code-review",
+        "release-readiness"
+      ],
+      "quality_gates": [
+        "agent_pack_validation",
+        "python_syntax",
+        "unit_tests",
+        "security_scan",
+        "diff_check",
+        "secrets_scan"
+      ],
+      "rationale": [
+        "Security route adds security guard, scan and release readiness checks."
+      ]
+    },
+    "ux": {
+      "agents": [
+        "ux_reviewer",
+        "documentation_reviewer",
+        "test_engineer",
+        "verifier"
+      ],
+      "skills": [
+        "ux-review",
+        "test-design",
+        "documentation-handoff"
+      ],
+      "quality_gates": [
+        "agent_pack_validation",
+        "unit_tests",
+        "diff_check"
+      ],
+      "rationale": [
+        "UX route adds usability review while keeping engineering gates proportional."
+      ]
+    },
+    "ci": {
+      "agents": [
+        "github_ci_reviewer",
+        "test_engineer",
+        "python_engineer",
+        "code_reviewer",
+        "verifier"
+      ],
+      "skills": [
+        "github-ci",
+        "python-quality",
+        "test-design",
+        "code-review"
+      ],
+      "quality_gates": [
+        "agent_pack_validation",
+        "python_syntax",
+        "unit_tests",
+        "ruff_lint",
+        "type_check",
+        "security_scan",
+        "diff_check"
+      ],
+      "rationale": [
+        "CI route aligns workflow checks with local quality gates."
+      ]
+    },
+    "release": {
+      "agents": [
+        "chief_orchestrator",
+        "github_ci_reviewer",
+        "security_guard",
+        "documentation_reviewer",
+        "verifier",
+        "handoff_reporter"
+      ],
+      "skills": [
+        "release-readiness",
+        "github-ci",
+        "security-review",
+        "documentation-handoff",
+        "handoff-update"
+      ],
+      "quality_gates": [
+        "agent_pack_validation",
+        "python_syntax",
+        "unit_tests",
+        "ruff_lint",
+        "type_check",
+        "security_scan",
+        "diff_check"
+      ],
+      "rationale": [
+        "Release route combines CI, security, docs and final verifier gates."
+      ]
+    }
+  },
   "roles": [
     {
       "id": "chief_orchestrator",
@@ -264,6 +566,12 @@
       "path": "archive/source_materials/SOURCE_PROOF.md"
     }
   ],
+  "execution_model": {
+    "local_roles": "Roles are registered in this manifest, selected by agent_routes, and passed to adapters as instruction paths.",
+    "local_skills": "Skills are registered as SKILL.md files, selected by agent_routes, and passed to adapters as instruction paths.",
+    "adapter_execution": "manual/codex/cursor/aider execute one routed task prompt by default; separate subagent spawning is controlled by the host environment, not by this portable pack.",
+    "default_mode": "dry-run route, plan and quality gates without editing the target project"
+  },
   "adapters": [
     {
       "id": "manual",
@@ -288,8 +596,11 @@
   ],
   "verification_commands": [
     "python scripts/validate_agent_pack.py",
-    "python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/task_io.py src/al_python_coding_agent/adapters.py src/al_python_coding_agent/runner.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py tests/test_runner.py",
+    "python -m py_compile src/al_python_coding_agent/__init__.py src/al_python_coding_agent/task_model.py src/al_python_coding_agent/policy.py src/al_python_coding_agent/routing.py src/al_python_coding_agent/task_io.py src/al_python_coding_agent/adapters.py src/al_python_coding_agent/runner.py src/al_python_coding_agent/cli.py scripts/validate_agent_pack.py tests/test_agent_pack.py tests/test_core_policy.py tests/test_routing.py tests/test_runner.py",
     "python -m al_python_coding_agent.cli run-task examples/python_bugfix_task.yaml",
+    "python -m al_python_coding_agent.cli list-agents",
+    "python -m al_python_coding_agent.cli list-skills",
+    "python -m al_python_coding_agent.cli inspect-route --type bugfix --json",
     "python -m unittest discover -s tests",
     "python -m pytest",
     "python -m ruff format --check .",

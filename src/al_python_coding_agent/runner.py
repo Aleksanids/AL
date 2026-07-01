@@ -6,6 +6,12 @@ from pathlib import Path
 
 from al_python_coding_agent.adapters import AdapterName, AdapterResult, run_adapter
 from al_python_coding_agent.policy import PathScope
+from al_python_coding_agent.routing import (
+    RouteSelection,
+    find_agent_root,
+    load_agent_manifest,
+    route_task,
+)
 from al_python_coding_agent.task_io import load_task
 from al_python_coding_agent.task_model import TaskSpec
 
@@ -15,6 +21,7 @@ PY_COMPILE_COMMAND = " ".join(
         "src/al_python_coding_agent/__init__.py",
         "src/al_python_coding_agent/task_model.py",
         "src/al_python_coding_agent/policy.py",
+        "src/al_python_coding_agent/routing.py",
         "src/al_python_coding_agent/task_io.py",
         "src/al_python_coding_agent/adapters.py",
         "src/al_python_coding_agent/runner.py",
@@ -22,6 +29,7 @@ PY_COMPILE_COMMAND = " ".join(
         "scripts/validate_agent_pack.py",
         "tests/test_agent_pack.py",
         "tests/test_core_policy.py",
+        "tests/test_routing.py",
         "tests/test_runner.py",
     )
 )
@@ -49,6 +57,7 @@ class TaskRunResult:
     dry_run: bool
     adapter_result: AdapterResult
     plan_steps: tuple[str, ...]
+    route_selection: RouteSelection
     quality_gates: tuple[str, ...]
     quality_gate_commands: tuple[str, ...]
     scope_summary: tuple[str, ...]
@@ -62,6 +71,12 @@ class TaskRunResult:
             "adapter": self.adapter_result.adapter,
             "adapter_status": self.adapter_result.status,
             "adapter_command": list(self.adapter_result.command),
+            "route": self.route_selection.to_dict(),
+            "agents": list(self.route_selection.agents),
+            "skills": list(self.route_selection.skills),
+            "agent_instruction_paths": list(self.route_selection.agent_paths),
+            "skill_instruction_paths": list(self.route_selection.skill_paths),
+            "route_warnings": list(self.route_selection.warnings),
             "plan_steps": list(self.plan_steps),
             "quality_gates": list(self.quality_gates),
             "quality_gate_commands": list(self.quality_gate_commands),
@@ -76,26 +91,36 @@ def run_task_file(
     execute: bool = False,
 ) -> TaskRunResult:
     task = load_task(task_path)
-    gates = task.quality_gates or DEFAULT_GATES
-    plan_steps = build_plan(task)
+    manifest_root = find_agent_root(task_path)
+    manifest = load_agent_manifest(manifest_root)
+    route_selection = route_task(
+        task.task_type,
+        manifest,
+        requested_agents=task.requested_agents,
+        requested_skills=task.requested_skills,
+        requested_quality_gates=task.quality_gates,
+    )
+    gates = route_selection.quality_gates or DEFAULT_GATES
+    plan_steps = build_plan(task, route_selection)
     gate_commands = tuple(
         QUALITY_GATE_COMMANDS.get(gate, f"unknown gate: {gate}") for gate in gates
     )
     scope_summary = build_scope_summary(task)
-    prompt = build_adapter_prompt(task, plan_steps, gate_commands)
+    prompt = build_adapter_prompt(task, plan_steps, route_selection, gate_commands)
     adapter_result = run_adapter(adapter, prompt, execute=execute)
     return TaskRunResult(
         task=task,
         dry_run=not execute,
         adapter_result=adapter_result,
         plan_steps=plan_steps,
+        route_selection=route_selection,
         quality_gates=gates,
         quality_gate_commands=gate_commands,
         scope_summary=scope_summary,
     )
 
 
-def build_plan(task: TaskSpec) -> tuple[str, ...]:
+def build_plan(task: TaskSpec, route_selection: RouteSelection | None = None) -> tuple[str, ...]:
     must_read = ", ".join(task.must_read) if task.must_read else "AGENTS.md, README.md"
     steps = [
         f"Confirm repo root and read: {must_read}",
@@ -105,6 +130,13 @@ def build_plan(task: TaskSpec) -> tuple[str, ...]:
         "Run quality gates and record exact outcomes.",
         "Send diff to critic/verifier before final handoff.",
     ]
+    if route_selection is not None:
+        route_step = "Activate agents/skills route"
+        if route_selection.agents:
+            route_step += ": agents=" + ", ".join(route_selection.agents)
+        if route_selection.skills:
+            route_step += "; skills=" + ", ".join(route_selection.skills)
+        steps.insert(2, route_step)
     if task.acceptance_criteria:
         steps.insert(2, "Acceptance criteria: " + "; ".join(task.acceptance_criteria))
     return tuple(steps)
@@ -127,6 +159,7 @@ def build_scope_summary(task: TaskSpec) -> tuple[str, ...]:
 def build_adapter_prompt(
     task: TaskSpec,
     plan_steps: tuple[str, ...],
+    route_selection: RouteSelection,
     quality_gate_commands: tuple[str, ...],
 ) -> str:
     return "\n".join(
@@ -137,6 +170,15 @@ def build_adapter_prompt(
             f"Priority: {task.priority}",
             "Context:",
             task.body or "<empty>",
+            "Assigned agents:",
+            *[f"- {agent}" for agent in route_selection.agents],
+            "Agent instruction files:",
+            *[f"- {path}" for path in route_selection.agent_paths],
+            "Activated skills:",
+            *[f"- {skill}" for skill in route_selection.skills],
+            "Skill instruction files:",
+            *[f"- {path}" for path in route_selection.skill_paths],
+            "Before editing, read every listed agent and skill instruction file.",
             "Plan:",
             *[f"{index}. {step}" for index, step in enumerate(plan_steps, start=1)],
             "Quality gates:",
@@ -155,6 +197,18 @@ def format_result(result: TaskRunResult, *, as_json: bool = False) -> str:
         f"Dry run: {result.dry_run}",
         f"Adapter: {result.adapter_result.adapter} ({result.adapter_result.status})",
         "",
+        "Agents:",
+        *[f"- {agent}" for agent in result.route_selection.agents],
+        "",
+        "Agent instruction files:",
+        *[f"- {path}" for path in result.route_selection.agent_paths],
+        "",
+        "Skills:",
+        *[f"- {skill}" for skill in result.route_selection.skills],
+        "",
+        "Skill instruction files:",
+        *[f"- {path}" for path in result.route_selection.skill_paths],
+        "",
         "Plan:",
         *[f"{index}. {step}" for index, step in enumerate(result.plan_steps, start=1)],
         "",
@@ -166,4 +220,12 @@ def format_result(result: TaskRunResult, *, as_json: bool = False) -> str:
     ]
     if result.adapter_result.command:
         lines.extend(["", "Adapter command:", " ".join(result.adapter_result.command)])
+    if result.route_selection.warnings:
+        lines.extend(
+            [
+                "",
+                "Route warnings:",
+                *[f"- {item}" for item in result.route_selection.warnings],
+            ]
+        )
     return "\n".join(lines)
