@@ -46,6 +46,21 @@ class AgentPackTests(unittest.TestCase):
 
         self.assertTrue(all(result.ok for result in results), results)
 
+    def test_skill_contracts_are_validated_explicitly(self) -> None:
+        validator = load_validator()
+        manifest, _result = validator.load_manifest(ROOT)
+
+        results = validator.check_skill_contracts(ROOT, manifest)
+
+        self.assertTrue(all(result.ok for result in results), results)
+
+    def test_agentignore_sections_are_validated(self) -> None:
+        validator = load_validator()
+
+        results = validator.check_agentignore(ROOT)
+
+        self.assertTrue(all(result.ok for result in results), results)
+
     def test_secret_scan_skips_sensitive_env_and_secret_paths(self) -> None:
         validator = load_validator()
         marker = "pass" + "word=hidden"

@@ -22,9 +22,13 @@
   reviewer, test engineer, security guard.
 - `.agents/python-coding-agent/skills/` - переиспользуемые skills для Python
   engineering, repository intake, debug/test loop, review, refactor и handoff.
+- `.agents/python-coding-agent/skills/SKILL_CONTRACT.md` - компактный стандарт
+  task-oriented skills.
 - `.agents/python-coding-agent/workflows/` - closed-loop workflow для задач.
 - `.agents/python-coding-agent/checklists/` - quality и safety gates.
 - `.agents/python-coding-agent/templates/` - шаблон task card.
+- `.agentignore` - read/write boundaries для агента: deny, read-only и
+  generated paths.
 - `policies/` - file scope, command, security и UX policies.
 - `quality_gates/` - machine-readable gate matrix.
 - `evals/` - план оценки качества самого агента.
@@ -173,6 +177,32 @@ python -m al_python_coding_agent.cli auto-connect --title "Fix traceback on empt
 По умолчанию команда работает как dry-run и не запускает внешний adapter.
 `--execute` нужен явно. Для ограничения scope можно добавить `--allow src/`
 и `--allow tests/`.
+
+## V0.6 AgentIgnore и task-oriented skills
+
+`.agentignore` стал компактным boundary-файлом для агента:
+
+```text
+[deny_read_write]
+.env
+.env.*
+
+[read_only]
+archive/source_materials/
+
+[generated]
+.venv/
+build/
+dist/
+```
+
+`auto-connect` читает этот файл автоматически, добавляет hard boundaries в
+`forbidden_paths` и вставляет краткий read/write summary в adapter prompt.
+Подробная интерпретация лежит в `policies/agent_boundary_policy.md`.
+
+Skills теперь проверяются validator-ом как task-oriented procedures:
+frontmatter, конкретный workflow/checklist/rules и evidence/output shape.
+Стандарт описан в `.agents/python-coding-agent/skills/SKILL_CONTRACT.md`.
 
 Dev tooling:
 

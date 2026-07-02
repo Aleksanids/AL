@@ -10,13 +10,6 @@ from al_python_coding_agent.routing import find_agent_root
 from al_python_coding_agent.runner import TaskRunResult, format_result, run_task
 from al_python_coding_agent.task_model import TaskSpec, classify_task
 
-DEFAULT_AUTOCONNECT_FORBIDDEN_PATHS = (
-    ".env",
-    ".env.*",
-    "secrets/",
-    "dist/",
-    "build/",
-)
 DEFAULT_AUTOCONNECT_MUST_READ = ("AGENTS.md", "README.md")
 
 
@@ -38,6 +31,7 @@ class AutoConnectResult:
             "skills": task_data["skills"],
             "agent_instruction_paths": task_data["agent_instruction_paths"],
             "skill_instruction_paths": task_data["skill_instruction_paths"],
+            "boundary_policy": task_data["boundary_policy"],
             "quality_gates": task_data["quality_gates"],
             "quality_gate_commands": task_data["quality_gate_commands"],
             "adapter_command": task_data["adapter_command"],
@@ -57,17 +51,12 @@ def auto_connect_task(
     forbidden_paths: Sequence[str] | None = None,
 ) -> AutoConnectResult:
     agent_root = find_agent_root(root or Path.cwd())
-    effective_forbidden_paths = (
-        tuple(forbidden_paths)
-        if forbidden_paths is not None
-        else DEFAULT_AUTOCONNECT_FORBIDDEN_PATHS
-    )
     task = TaskSpec(
         title=title,
         body=body,
         task_type=classify_task(title, body),
         allowed_paths=tuple(allowed_paths),
-        forbidden_paths=effective_forbidden_paths,
+        forbidden_paths=tuple(forbidden_paths) if forbidden_paths is not None else (),
         must_read=DEFAULT_AUTOCONNECT_MUST_READ,
     )
     task_run = run_task(task, task_root=agent_root, adapter=adapter, execute=execute)

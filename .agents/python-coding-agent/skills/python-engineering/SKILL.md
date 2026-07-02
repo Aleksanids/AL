@@ -43,3 +43,10 @@ git diff --check
 ```
 
 Запускай только то, что реально применимо и доступно.
+
+## Output
+
+- contract summary: inputs, outputs, side effects and errors;
+- changed files;
+- tests/checks with exact outcomes;
+- residual risks or skipped gates.

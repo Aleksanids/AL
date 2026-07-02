@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from al_python_coding_agent.adapters import AdapterName, AdapterResult, run_adapter
-from al_python_coding_agent.policy import PathScope
+from al_python_coding_agent.policy import AgentBoundaryPolicy, PathScope, load_agentignore
 from al_python_coding_agent.routing import (
     RouteSelection,
     find_agent_root,
@@ -60,6 +60,7 @@ class TaskRunResult:
     adapter_result: AdapterResult
     plan_steps: tuple[str, ...]
     route_selection: RouteSelection
+    boundary_policy: AgentBoundaryPolicy
     quality_gates: tuple[str, ...]
     quality_gate_commands: tuple[str, ...]
     scope_summary: tuple[str, ...]
@@ -79,6 +80,7 @@ class TaskRunResult:
             "agent_instruction_paths": list(self.route_selection.agent_paths),
             "skill_instruction_paths": list(self.route_selection.skill_paths),
             "route_warnings": list(self.route_selection.warnings),
+            "boundary_policy": self.boundary_policy.to_dict(),
             "plan_steps": list(self.plan_steps),
             "quality_gates": list(self.quality_gates),
             "quality_gate_commands": list(self.quality_gate_commands),
@@ -105,31 +107,53 @@ def run_task(
 ) -> TaskRunResult:
     manifest_root = find_agent_root(task_root)
     manifest = load_agent_manifest(manifest_root)
+    boundary_policy = load_agentignore(manifest_root)
+    effective_task = apply_boundary_policy(task, boundary_policy)
     route_selection = route_task(
-        task.task_type,
+        effective_task.task_type,
         manifest,
-        requested_agents=task.requested_agents,
-        requested_skills=task.requested_skills,
-        requested_quality_gates=task.quality_gates,
+        requested_agents=effective_task.requested_agents,
+        requested_skills=effective_task.requested_skills,
+        requested_quality_gates=effective_task.quality_gates,
     )
     gates = route_selection.quality_gates or DEFAULT_GATES
-    plan_steps = build_plan(task, route_selection)
+    plan_steps = build_plan(effective_task, route_selection)
     gate_commands = tuple(
         QUALITY_GATE_COMMANDS.get(gate, f"unknown gate: {gate}") for gate in gates
     )
-    scope_summary = build_scope_summary(task)
-    prompt = build_adapter_prompt(task, plan_steps, route_selection, gate_commands)
+    scope_summary = build_scope_summary(effective_task)
+    prompt = build_adapter_prompt(
+        effective_task,
+        plan_steps,
+        route_selection,
+        boundary_policy,
+        gate_commands,
+    )
     adapter_result = run_adapter(adapter, prompt, execute=execute)
     return TaskRunResult(
-        task=task,
+        task=effective_task,
         dry_run=not execute,
         adapter_result=adapter_result,
         plan_steps=plan_steps,
         route_selection=route_selection,
+        boundary_policy=boundary_policy,
         quality_gates=gates,
         quality_gate_commands=gate_commands,
         scope_summary=scope_summary,
     )
+
+
+def apply_boundary_policy(task: TaskSpec, policy: AgentBoundaryPolicy) -> TaskSpec:
+    forbidden_paths = dedupe((*task.forbidden_paths, *policy.blocked_paths()))
+    must_read = dedupe(
+        (
+            *task.must_read,
+            ".agentignore",
+            "policies/file_scope_policy.md",
+            "policies/agent_boundary_policy.md",
+        )
+    )
+    return replace(task, forbidden_paths=forbidden_paths, must_read=must_read)
 
 
 def build_plan(task: TaskSpec, route_selection: RouteSelection | None = None) -> tuple[str, ...]:
@@ -172,6 +196,7 @@ def build_adapter_prompt(
     task: TaskSpec,
     plan_steps: tuple[str, ...],
     route_selection: RouteSelection,
+    boundary_policy: AgentBoundaryPolicy,
     quality_gate_commands: tuple[str, ...],
 ) -> str:
     return "\n".join(
@@ -191,6 +216,8 @@ def build_adapter_prompt(
             "Skill instruction files:",
             *[f"- {path}" for path in route_selection.skill_paths],
             "Before editing, read every listed agent and skill instruction file.",
+            "AgentIgnore/read-write policy:",
+            *[f"- {line}" for line in boundary_policy.prompt_lines()],
             "Plan:",
             *[f"{index}. {step}" for index, step in enumerate(plan_steps, start=1)],
             "Quality gates:",
@@ -221,6 +248,9 @@ def format_result(result: TaskRunResult, *, as_json: bool = False) -> str:
         "Skill instruction files:",
         *[f"- {path}" for path in result.route_selection.skill_paths],
         "",
+        "Boundary policy:",
+        *[f"- {line}" for line in result.boundary_policy.prompt_lines()],
+        "",
         "Plan:",
         *[f"{index}. {step}" for index, step in enumerate(result.plan_steps, start=1)],
         "",
@@ -241,3 +271,13 @@ def format_result(result: TaskRunResult, *, as_json: bool = False) -> str:
             ]
         )
     return "\n".join(lines)
+
+
+def dedupe(items: tuple[str, ...]) -> tuple[str, ...]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for item in items:
+        if item not in seen:
+            result.append(item)
+            seen.add(item)
+    return tuple(result)

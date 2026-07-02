@@ -9,7 +9,12 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from al_python_coding_agent.policy import PathScope, assess_command
+from al_python_coding_agent.policy import (
+    PathScope,
+    assess_command,
+    load_agentignore,
+    parse_agentignore,
+)
 from al_python_coding_agent.task_model import TaskSpec, classify_task
 
 
@@ -60,6 +65,41 @@ class PolicyTests(unittest.TestCase):
         decision = scope.check("docs/readme.md")
 
         self.assertFalse(decision.allowed)
+
+    def test_path_scope_blocks_wildcard_boundary(self) -> None:
+        scope = PathScope(forbidden_paths=("*.egg-info/",))
+
+        decision = scope.check("src/al_python_coding_agent.egg-info/PKG-INFO")
+
+        self.assertFalse(decision.allowed)
+
+    def test_parse_agentignore_sections(self) -> None:
+        policy = parse_agentignore(
+            """
+[deny_read_write]
+.env
+private/
+
+[read_only]
+archive/
+
+[generated]
+build/
+dist/
+"""
+        )
+
+        self.assertEqual((".env", "private/"), policy.deny_read_write)
+        self.assertEqual(("archive/",), policy.read_only)
+        self.assertEqual(("build/", "dist/"), policy.generated)
+        self.assertEqual((".env", "private/", "build/", "dist/"), policy.blocked_paths())
+
+    def test_load_agentignore_reads_repo_policy(self) -> None:
+        policy = load_agentignore(ROOT)
+
+        self.assertIn(".env", policy.deny_read_write)
+        self.assertIn("archive/source_materials/", policy.read_only)
+        self.assertIn(".venv/", policy.generated)
 
 
 if __name__ == "__main__":

@@ -15,6 +15,8 @@
   `.agents/python-coding-agent/agent.json`.
 - Основной prompt:
   `.agents/python-coding-agent/system_prompt.md`.
+- Compact read/write boundaries:
+  `.agentignore` и `policies/agent_boundary_policy.md`.
 - Все рабочие артефакты, отчеты и инструкции по этому агенту создавай внутри
   репозитория, если пользователь не сказал иное.
 
@@ -76,6 +78,8 @@ Always-on роли:
 
 - Не читать `.env`, secrets, tokens, cookies, passwords, browser profiles и
   приватные URL.
+- Применять `.agentignore`: `deny_read_write` и `generated` не читать и не
+  редактировать; `read_only` менять только при явном scope.
 - Не запускать live API, browser automation, OCR, Selenium, package install,
   background watchers, scheduled tasks, commit, push или PR без отдельной
   прямой команды пользователя.

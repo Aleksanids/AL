@@ -11,6 +11,7 @@ REQUIRED_ROOT_FILES = (
     "AGENTS.md",
     "CLAUDE.md",
     ".cursorrules",
+    ".agentignore",
     ".env.example",
     ".github/copilot-instructions.md",
     ".github/pull_request_template.md",
@@ -18,6 +19,7 @@ REQUIRED_ROOT_FILES = (
     ".gitattributes",
     ".gitignore",
     "docs/research-notes.md",
+    "policies/agent_boundary_policy.md",
     "archive/source_materials/SOURCE_PROOF.md",
     "archive/source_materials/universal_ai_agent_knowledge_base/README.md",
     "src/al_python_coding_agent/__init__.py",
@@ -29,6 +31,7 @@ REQUIRED_ROOT_FILES = (
     "src/al_python_coding_agent/adapters.py",
     "src/al_python_coding_agent/runner.py",
     "src/al_python_coding_agent/cli.py",
+    "tests/test_agent_pack.py",
     "tests/test_autoconnect.py",
     "tests/test_core_policy.py",
     "tests/test_routing.py",
@@ -39,6 +42,7 @@ REQUIRED_ROOT_FILES = (
 REQUIRED_AGENT_FILES = (
     ".agents/python-coding-agent/agent.json",
     ".agents/python-coding-agent/system_prompt.md",
+    ".agents/python-coding-agent/skills/SKILL_CONTRACT.md",
     ".agents/python-coding-agent/workflows/closed_loop_python_task.md",
     ".agents/python-coding-agent/checklists/python_quality_gate.md",
     ".agents/python-coding-agent/checklists/security_and_context_gate.md",
@@ -87,6 +91,8 @@ KNOWN_QUALITY_GATES = {
     "type_check",
     "security_scan",
 }
+
+REQUIRED_AGENTIGNORE_SECTIONS = ("deny_read_write", "read_only", "generated")
 
 
 @dataclass(frozen=True)
@@ -147,7 +153,14 @@ def load_manifest(root: Path) -> tuple[dict[str, object] | None, CheckResult]:
 
 
 def iter_manifest_paths(manifest: dict[str, object]) -> Iterable[str]:
-    agent_relative_keys = {"roles", "skills", "workflows", "checklists", "templates"}
+    agent_relative_keys = {
+        "roles",
+        "skills",
+        "skill_contracts",
+        "workflows",
+        "checklists",
+        "templates",
+    }
     root_relative_keys = {
         "policies",
         "quality_gates",
@@ -191,7 +204,73 @@ def check_manifest(root: Path) -> list[CheckResult]:
     for relative_path in iter_manifest_paths(manifest):
         results.append(check_file_exists(root, relative_path))
     results.extend(check_agent_routes(manifest))
+    results.extend(check_skill_contracts(root, manifest))
     return results
+
+
+def check_skill_contracts(root: Path, manifest: dict[str, object]) -> list[CheckResult]:
+    items = manifest.get("skills", [])
+    if not isinstance(items, list):
+        return [CheckResult("skill_contracts", False, "skills is not a list")]
+    results: list[CheckResult] = []
+    for item in items:
+        if not isinstance(item, dict) or not isinstance(item.get("path"), str):
+            continue
+        skill_id = item.get("id", "<unknown>")
+        skill_path = root / ".agents/python-coding-agent" / item["path"]
+        try:
+            content = read_utf8(skill_path)
+        except FileNotFoundError:
+            results.append(CheckResult(f"skill_contracts:{skill_id}", False, "missing"))
+            continue
+        missing = missing_skill_contract_sections(content)
+        if missing:
+            results.append(
+                CheckResult(
+                    f"skill_contracts:{skill_id}",
+                    False,
+                    "missing: " + ", ".join(missing),
+                )
+            )
+    if not results:
+        results.append(CheckResult("skill_contracts", True, f"{len(items)} skills ok"))
+    return results
+
+
+def missing_skill_contract_sections(content: str) -> tuple[str, ...]:
+    missing: list[str] = []
+    if not content.lstrip().startswith("---") or "description:" not in content:
+        missing.append("frontmatter description")
+    procedure_markers = (
+        "## Workflow",
+        "## Procedure",
+        "## Checklist",
+        "## Checks",
+        "## Principles",
+        "## Required Fields",
+        "## Rules",
+        "## Rule",
+        "## Loop Contract",
+        "## Trigger",
+        "## Use When",
+        "## When To Use",
+    )
+    evidence_markers = (
+        "## Output",
+        "## Report",
+        "## Acceptance",
+        "## Verification",
+        "## Suggested Gates",
+        "## Shape",
+        "## Required Fields",
+        "## Checklist",
+        "## Checks",
+    )
+    if not any(marker in content for marker in procedure_markers):
+        missing.append("task procedure")
+    if not any(marker in content for marker in evidence_markers):
+        missing.append("evidence output")
+    return tuple(missing)
 
 
 def check_agent_routes(manifest: dict[str, object]) -> list[CheckResult]:
@@ -315,6 +394,23 @@ def check_secret_markers(root: Path) -> list[CheckResult]:
     return results
 
 
+def check_agentignore(root: Path) -> list[CheckResult]:
+    path = root / ".agentignore"
+    try:
+        content = read_utf8(path)
+    except FileNotFoundError:
+        return [CheckResult(".agentignore", False, "missing")]
+    sections = {
+        line.strip()[1:-1]
+        for line in content.splitlines()
+        if line.strip().startswith("[") and line.strip().endswith("]")
+    }
+    missing = [section for section in REQUIRED_AGENTIGNORE_SECTIONS if section not in sections]
+    if missing:
+        return [CheckResult(".agentignore", False, "missing sections: " + ", ".join(missing))]
+    return [CheckResult(".agentignore", True, "sections ok")]
+
+
 def is_excluded_from_scan(path: Path, root: Path) -> bool:
     relative_parts = {part.casefold() for part in path.relative_to(root).parts}
     file_name = path.name.casefold()
@@ -328,6 +424,7 @@ def run_checks(root: Path) -> list[CheckResult]:
     return [
         *check_required_files(root),
         *check_manifest(root),
+        *check_agentignore(root),
         *check_secret_markers(root),
     ]
 

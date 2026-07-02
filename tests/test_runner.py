@@ -62,6 +62,8 @@ class RunnerTests(unittest.TestCase):
         self.assertIn("bug-investigation", result.route_selection.skills)
         self.assertIn("roles/python_engineer.md", result.route_selection.agent_paths)
         self.assertIn("skills/bug-investigation/SKILL.md", result.route_selection.skill_paths)
+        self.assertIn(".env", result.boundary_policy.deny_read_write)
+        self.assertIn(".venv/", result.boundary_policy.generated)
         self.assertIn("python -m unittest discover -s tests", result.quality_gate_commands)
 
     def test_format_result_mentions_scope_and_gates(self) -> None:
@@ -73,6 +75,7 @@ class RunnerTests(unittest.TestCase):
         self.assertIn("Agent instruction files:", rendered)
         self.assertIn("Skills:", rendered)
         self.assertIn("Skill instruction files:", rendered)
+        self.assertIn("Boundary policy:", rendered)
         self.assertIn("Quality gates:", rendered)
         self.assertIn("allowed_paths", rendered)
 
@@ -85,6 +88,7 @@ class RunnerTests(unittest.TestCase):
         self.assertIn('"agents"', rendered)
         self.assertIn('"agent_instruction_paths"', rendered)
         self.assertIn('"skill_instruction_paths"', rendered)
+        self.assertIn('"boundary_policy"', rendered)
 
     def test_codex_adapter_prompt_contains_route(self) -> None:
         result = run_task_file(EXAMPLE_TASK, adapter="codex")
@@ -98,6 +102,8 @@ class RunnerTests(unittest.TestCase):
         self.assertIn("Activated skills:", prompt)
         self.assertIn("Skill instruction files:", prompt)
         self.assertIn("skills/bug-investigation/SKILL.md", prompt)
+        self.assertIn("AgentIgnore/read-write policy:", prompt)
+        self.assertIn("deny_read_write:", prompt)
 
 
 class AdapterTests(unittest.TestCase):

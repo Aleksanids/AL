@@ -24,3 +24,10 @@ Production-breaking or user-blocking defect with narrow expected behavior.
 - dependency churn;
 - unrelated cleanup;
 - deleting tests to pass CI.
+
+## Output
+
+- exact failing path or user-visible symptom;
+- changed files;
+- targeted checks and outcomes;
+- unverified risks after the urgent fix.

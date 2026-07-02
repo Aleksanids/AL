@@ -43,6 +43,7 @@ class AutoConnectTests(unittest.TestCase):
         result = auto_connect_task("Add new CLI command", root=ROOT)
 
         self.assertIn(".env: deny", "\n".join(result.task_run.scope_summary))
+        self.assertIn(".venv/: deny", "\n".join(result.task_run.scope_summary))
         self.assertIn("build/: deny", "\n".join(result.task_run.scope_summary))
 
     def test_format_auto_connect_json_is_machine_readable(self) -> None:
@@ -55,6 +56,7 @@ class AutoConnectTests(unittest.TestCase):
         self.assertEqual(str(ROOT), data["root"])
         self.assertIn("agents", data)
         self.assertIn("skill_instruction_paths", data)
+        self.assertIn("boundary_policy", data)
 
     def test_cli_auto_connect_outputs_route_json(self) -> None:
         output = StringIO()

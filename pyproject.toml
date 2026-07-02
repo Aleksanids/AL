@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "al-python-coding-agent"
-version = "0.5.0"
+version = "0.6.0"
 description = "Portable Python coding agent instruction pack with deterministic policy helpers."
 readme = "README.md"
 requires-python = ">=3.11"

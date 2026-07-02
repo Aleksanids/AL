@@ -1,0 +1,31 @@
+# AL AgentIgnore v1
+#
+# Sections:
+# - deny_read_write: never read, write, summarize, or pass into prompts.
+# - read_only: reading is allowed when relevant; writing needs explicit scope.
+# - generated: skip by default; regenerate through commands instead of editing.
+
+[deny_read_write]
+.env
+.env.*
+secrets/
+private/
+credentials/
+*.pem
+*.key
+*.pfx
+
+[read_only]
+archive/source_materials/
+docs/research-notes.md
+evals/
+
+[generated]
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+build/
+dist/
+*.egg-info/
